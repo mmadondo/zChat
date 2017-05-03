@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">zChat</string>
+    <string name="sign_out" />
+    <string name="input">Input</string>
+</resources>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "862041023502",
+    "firebase_url": "https://zchat-1d45b.firebaseio.com",
+    "project_id": "zchat-1d45b",
+    "storage_bucket": "zchat-1d45b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862041023502:android:b69191b2f9d91caa",
+        "android_client_info": {
+          "package_name": "commmadondo.github.zchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "862041023502-l95os9evdihjabtar7vi2l91mkt4pr06.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "commmadondo.github.zchat",
+            "certificate_hash": "65c9590523b036f88170896cc89a252381d9f26d"
+          }
+        },
+        {
+          "client_id": "862041023502-fj71an48jiuu6ck35ngv2sl5b9lbt3tp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpCfJBCVs8EIj6wxS9QIs07DtL4MNibFg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "862041023502-fj71an48jiuu6ck35ngv2sl5b9lbt3tp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
