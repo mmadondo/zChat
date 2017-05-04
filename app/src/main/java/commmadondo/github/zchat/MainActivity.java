@@ -1,5 +1,6 @@
 package commmadondo.github.zchat;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -32,8 +33,7 @@ import static android.app.Activity.RESULT_OK;
 /**
  * Group chat app with one chat room or channel open to all users
  */
-public class MainActivity extends AppCompatActivity
-        implements GoogleApiClient.OnConnectionFailedListener{
+public class MainActivity extends AppCompatActivity {
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final int SIGN_IN_REQUEST_CODE = 9001;
     private FirebaseListAdapter<ChatMessage> adapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +60,13 @@ public class MainActivity extends AppCompatActivity
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         //mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
 
-        if(mFirebaseUser == null) {
+
+        if (mFirebaseUser == null) {
             // Start sign in/sign up activity
-                //startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
+            //startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
 
             startActivityForResult(new Intent(this, ActivitySignIn.class), SIGN_IN_REQUEST_CODE);
-          finish();
+            finish();
             return;
 
         } else {
@@ -78,23 +78,18 @@ public class MainActivity extends AppCompatActivity
                 // Load chat room contents
                 displayChatMessages();
 
-            }  catch(NullPointerException e)
-            {
+            } catch (NullPointerException e) {
                 System.out.print("NullPointerException caught");
             }
         }
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .build();
 
-        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
-       // fab.setEnabled(true);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // fab.setEnabled(true);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText input = (EditText)findViewById(R.id.input);
+                EditText input = (EditText) findViewById(R.id.input);
 
                 // Read the input field and push a new instance of ChatMessage to the Firebase database
                 FirebaseDatabase.getInstance()
@@ -119,8 +114,8 @@ public class MainActivity extends AppCompatActivity
                                     Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == SIGN_IN_REQUEST_CODE) {
-            if(resultCode == RESULT_OK) {
+        if (requestCode == SIGN_IN_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
 
                 Toast.makeText(this, "Successfully signed in. Welcome!", Toast.LENGTH_LONG).show();
 
@@ -136,6 +131,8 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -148,36 +145,27 @@ public class MainActivity extends AppCompatActivity
             case R.id.menu_sign_out:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-               mUsername = ANONYMOUS;
+                mUsername = ANONYMOUS;
                 startActivity(new Intent(this, ActivitySignIn.class));
 
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-      }
-   }
-
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void displayChatMessages() {
-        ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
+
+    void displayChatMessages() {
+        ListView listOfMessages = (ListView) findViewById(R.id.list_of_messages);
 
         adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
                 R.layout.message, FirebaseDatabase.getInstance().getReference()) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
                 // Get references to the views of message.xml
-                TextView messageText = (TextView)v.findViewById(R.id.message_text);
-                TextView messageUser = (TextView)v.findViewById(R.id.message_user);
-                TextView messageTime = (TextView)v.findViewById(R.id.message_time);
+                TextView messageText = (TextView) v.findViewById(R.id.message_text);
+                TextView messageUser = (TextView) v.findViewById(R.id.message_user);
+                TextView messageTime = (TextView) v.findViewById(R.id.message_time);
 
                 // Set their text
                 messageText.setText(model.getMessageText());
@@ -191,4 +179,6 @@ public class MainActivity extends AppCompatActivity
 
         listOfMessages.setAdapter(adapter);
     }
-}
+
+ }
+
