@@ -1,9 +1,4 @@
 package commmadondo.github.zchat;
-
-/**
- * Created by mmadondo on 5/2/2017.
- */
-
 /**
  * Copyright Google Inc. All Rights Reserved.
  *
@@ -26,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -41,12 +37,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-public class SignInActivity extends AppCompatActivity implements
+public class ActivitySignIn extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
-    private static final String TAG = "SignInActivity";
+    private static final String TAG = "ActivitySignIn";
     private static final int SIGN_IN_REQUEST_CODE = 9001; //SIGN_IN_REQUEST_CODE = RC_SIGN_IN
-
+    private EditText editTextEmail;
+    private EditText editTextPassword;
     private SignInButton mSignInButton;
 
     private GoogleApiClient mGoogleApiClient;
@@ -57,12 +54,18 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
+        setContentView(R.layout.activity_sign_in2);
+
+        //setting up the views
+       // editTextEmail = (EditText) findViewById(R.id.editTextEmail);
+      //  editTextPassword = (EditText) findViewById(R.id.editTextPassword);
 
         // Assign fields
         mSignInButton = (SignInButton) findViewById(R.id.sign_in_button);
 
         // Set click listeners
+       // mSignInButton.setOnClickListener(this);
+
         mSignInButton.setOnClickListener(this);
 
         // Configure Google Sign In
@@ -130,10 +133,10 @@ public class SignInActivity extends AppCompatActivity implements
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "signInWithCredential", task.getException());
-                            Toast.makeText(SignInActivity.this, "Authentication failed.",
+                            Toast.makeText(ActivitySignIn.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                            startActivity(new Intent(ActivitySignIn.this, MainActivity.class));
                             finish();
                         }
                     }

@@ -3,9 +3,11 @@ package commmadondo.github.zchat;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,7 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.firebase.ui.*;
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -38,18 +40,19 @@ public class MainActivity extends AppCompatActivity
     private FirebaseUser mFirebaseUser;
     private String mUsername;
     public static final String ANONYMOUS = "anonymous";
-    private static final int SIGN_IN_REQUEST_CODE = 9001;
-    private FirebaseListAdapter<ChatMessage> adapter;
     FirebaseAuth AuthUI = FirebaseAuth.getInstance();
     private GoogleApiClient mGoogleApiClient;
     private static final String TAG = "MainActivity";
 
+    private static final int SIGN_IN_REQUEST_CODE = 9001;
+    private FirebaseListAdapter<ChatMessage> adapter;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //set default user as anonymous
         mUsername = ANONYMOUS;
 
@@ -57,26 +60,28 @@ public class MainActivity extends AppCompatActivity
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         //mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
+
         if(mFirebaseUser == null) {
             // Start sign in/sign up activity
                 //startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
 
-                // Not signed in, launch the Sign In activity
-                startActivity(new Intent(this, SignInActivity.class));
-                finish();
-                return;
+            startActivityForResult(new Intent(this, ActivitySignIn.class), SIGN_IN_REQUEST_CODE);
+          finish();
+            return;
 
         } else {
-            // User is already signed in. Therefore, display
-            // a welcome Toast
+            // User is already signed in. Therefore, display a welcome Toast
+            try {
 
-            Toast.makeText(this,
-                    "Welcome " + mFirebaseUser.getDisplayName(),
-                    Toast.LENGTH_LONG)
-                    .show();
+                Toast.makeText(this, "Welcome " + mFirebaseUser.getDisplayName(), Toast.LENGTH_LONG).show();
 
-            // Load chat room contents
-            displayChatMessages();
+                // Load chat room contents
+                displayChatMessages();
+
+            }  catch(NullPointerException e)
+            {
+                System.out.print("NullPointerException caught");
+            }
         }
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -85,14 +90,13 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
-
+       // fab.setEnabled(true);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditText input = (EditText)findViewById(R.id.input);
 
-                // Read the input field and push a new instance
-                // of ChatMessage to the Firebase database
+                // Read the input field and push a new instance of ChatMessage to the Firebase database
                 FirebaseDatabase.getInstance()
                         .getReference()
                         .push()
@@ -108,6 +112,59 @@ public class MainActivity extends AppCompatActivity
         });
 
         //Firebase.setAndroidContext(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == SIGN_IN_REQUEST_CODE) {
+            if(resultCode == RESULT_OK) {
+
+                Toast.makeText(this, "Successfully signed in. Welcome!", Toast.LENGTH_LONG).show();
+
+                displayChatMessages();
+
+            } else {
+
+                Toast.makeText(this, "Sign in failed. Please try again later.", Toast.LENGTH_LONG).show();
+
+                // Close the app
+                finish();
+            }
+        }
+
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_sign_out:
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+               mUsername = ANONYMOUS;
+                startActivity(new Intent(this, ActivitySignIn.class));
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+      }
+   }
+
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
+        // be available.
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
     private void displayChatMessages() {
@@ -133,57 +190,5 @@ public class MainActivity extends AppCompatActivity
         };
 
         listOfMessages.setAdapter(adapter);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == SIGN_IN_REQUEST_CODE) {
-            if(resultCode == RESULT_OK) {
-                Toast.makeText(this,
-                        "Successfully signed in. Welcome!",
-                        Toast.LENGTH_LONG)
-                        .show();
-                displayChatMessages();
-            } else {
-                Toast.makeText(this,
-                        "Sign in failed. Please try again later.",
-                        Toast.LENGTH_LONG)
-                        .show();
-
-                // Close the app
-                finish();
-            }
-        }
-
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_sign_out:
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(this, SignInActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 }
