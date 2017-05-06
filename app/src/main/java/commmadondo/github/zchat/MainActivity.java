@@ -31,21 +31,23 @@ import com.google.firebase.database.FirebaseDatabase;
 import static android.app.Activity.RESULT_OK;
 
 /**
- * Group chat app with one chat room or channel open to all users
+ * Group chat app with one chat room or channel open to all users (with identities hidden)
  */
 public class MainActivity extends AppCompatActivity {
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-    private String mUsername;
+    private FirebaseListAdapter<ChatMessage> adapter;
+
     public static final String ANONYMOUS = "anonymous";
+
     FirebaseAuth AuthUI = FirebaseAuth.getInstance();
     private GoogleApiClient mGoogleApiClient;
     private static final String TAG = "MainActivity";
+    private String mUsername;
 
     private static final int SIGN_IN_REQUEST_CODE = 9001;
-    private FirebaseListAdapter<ChatMessage> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +60,14 @@ public class MainActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
+       // mFirebaseUser.getUid();
         //mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
 
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         if (mFirebaseUser == null) {
             // Start sign in/sign up activity
-            //startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
+           // startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
 
             startActivityForResult(new Intent(this, ActivitySignIn.class), SIGN_IN_REQUEST_CODE);
             finish();
@@ -73,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
             // User is already signed in. Therefore, display a welcome Toast
             try {
 
-                Toast.makeText(this, "Welcome " + mFirebaseUser.getDisplayName(), Toast.LENGTH_LONG).show();
-
+                Toast.makeText(this, "Welcome to zChat!" + mFirebaseUser.getUid(), Toast.LENGTH_LONG).show();
+//replace getUid with mFirebaseUser.getDisplayName()
                 // Load chat room contents
                 displayChatMessages();
 
@@ -84,54 +88,52 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         // fab.setEnabled(true);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditText input = (EditText) findViewById(R.id.input);
+                try{
+                    // Read the input field and push a new instance of ChatMessage to the Firebase database
+                    FirebaseDatabase.getInstance()
+                            .getReference()
+                            .push()
+                            .setValue(new ChatMessage(input.getText().toString(),
+                                    FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                            );
 
-                // Read the input field and push a new instance of ChatMessage to the Firebase database
-                FirebaseDatabase.getInstance()
-                        .getReference()
-                        .push()
-                        .setValue(new ChatMessage(input.getText().toString(),
-                                FirebaseAuth.getInstance()
-                                        .getCurrentUser()
-                                        .getDisplayName())
-                        );
+                    // Clear the input
+                    input.setText("");
 
-                // Clear the input
-                input.setText("");
+                } catch(NullPointerException e){
+                    System.out.print("NullPointerException caught");
+                }
             }
         });
 
-        //Firebase.setAndroidContext(this);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == SIGN_IN_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
 
                 Toast.makeText(this, "Successfully signed in. Welcome!", Toast.LENGTH_LONG).show();
-
                 displayChatMessages();
 
             } else {
 
                 Toast.makeText(this, "Sign in failed. Please try again later.", Toast.LENGTH_LONG).show();
-
                 // Close the app
                 finish();
             }
         }
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -144,10 +146,10 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_sign_out:
                 mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                Toast.makeText(MainActivity.this, "You have been signed out.", Toast.LENGTH_LONG).show();
+
                 mUsername = ANONYMOUS;
                 startActivity(new Intent(this, ActivitySignIn.class));
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -155,11 +157,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void displayChatMessages() {
+   public void displayChatMessages() {
         ListView listOfMessages = (ListView) findViewById(R.id.list_of_messages);
 
-        adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
-                R.layout.message, FirebaseDatabase.getInstance().getReference()) {
+        adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class, R.layout.message, FirebaseDatabase.getInstance().getReference()) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
                 // Get references to the views of message.xml
@@ -172,13 +173,12 @@ public class MainActivity extends AppCompatActivity {
                 messageUser.setText(model.getMessageUser());
 
                 // Format the date before showing it
-                messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",
-                        model.getMessageTime()));
+                messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)", model.getMessageTime()));
             }
         };
 
         listOfMessages.setAdapter(adapter);
     }
 
- }
+}
 

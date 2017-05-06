@@ -22,13 +22,14 @@
         app:fabSize="mini"
         android:src="@drawable/ic_send_dark"/>
 
+
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toStartOf="@id/fab"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true">
-
+        android:layout_alignParentStart="true"
+        >
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

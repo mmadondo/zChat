@@ -40,23 +40,23 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-public class ActivitySignIn extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+import static android.app.Activity.RESULT_OK;
+
+public class ActivitySignIn extends AppCompatActivity {
+       // implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     MainActivity mainAct;
     private static final String TAG = "ActivitySignIn";
-    private static final int SIGN_IN_REQUEST_CODE = 9001; //SIGN_IN_REQUEST_CODE = RC_SIGN_IN
-    private EditText editTextEmail;
-    private EditText editTextPassword;
-    private SignInButton mSignInButton;
-    private Button buttonLogin;
-    private Button buttonCreateLogin;
-    private TextView textViewStatus;
+    private static final int SIGN_IN_REQUEST_CODE = 9001;
 
-    private GoogleApiClient mGoogleApiClient;
+    EditText editTextEmail, editTextPassword;
+    Button buttonLogin, buttonCreateLogin;
+    TextView textViewStatus;
+    private FirebaseAuth mFirebaseAuth; // Firebase instance variables
 
-    // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
+    // private SignInButton mSignInButton;
+    //private GoogleApiClient mGoogleApiClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,119 +68,52 @@ public class ActivitySignIn extends AppCompatActivity implements
         editTextEmail = (EditText) findViewById(R.id.editTextEmail);
         editTextPassword = (EditText) findViewById(R.id.editTextPassword);
 
-        // Assign fields
-        mSignInButton = (SignInButton) findViewById(R.id.sign_in_button); //google sign in btn
+        mFirebaseAuth = FirebaseAuth.getInstance(); // Initialize FirebaseAuth
 
+        setupButtonLogin();
+        setupCreateAccount();
+
+    }
+
+    private void setupButtonLogin(){
+        //setup the button to enable a user to log in
         buttonLogin = (Button) findViewById(R.id.buttonLogin);
-        buttonCreateLogin = (Button) findViewById(R.id.buttonCreateLogin);
-
-        // Set click listeners
-        mSignInButton.setOnClickListener(this);
-
-        /*
-        * user login
-        */
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //Log.d("CIS3334", "normal login ");
-                signIn1(editTextEmail.getText().toString(), editTextPassword.getText().toString());
-                mainAct.displayChatMessages();
+                // Log.d("CIS3334", "normal login ");
+                if(editTextEmail.getText().toString().equals("")){ //email is required
+                    editTextEmail.setError("Can't be blank!");
+                } else if(editTextPassword.getText().toString().equals("")){ //password is required
+                    editTextPassword.setError("Can't be blank");
+                }else{
+                    if(!(editTextEmail.length()<5) || !(editTextPassword.length()>5)){
+
+                        signIn(editTextEmail.getText().toString(), editTextPassword.getText().toString());
+                        mainAct.onActivityResult(SIGN_IN_REQUEST_CODE, RESULT_OK, null); //want to display messages after login
+
+                    }else{
+                        if(editTextEmail.length()<5){
+                            editTextEmail.setError("At Least 5 characters required");
+                        }else{
+                            editTextPassword.setError("At Least 5 characters required");
+                        }
+                    }
+  }
             }
         });
-                /*
-        * creates account using user email and password
-         */
+    }
+
+    private void setupCreateAccount(){
+        //setup a button so user creates account using email and password
+        buttonCreateLogin = (Button) findViewById(R.id.buttonCreateLogin);
         buttonCreateLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Log.d("CIS3334", "Create Account ");
                 createAccount(editTextEmail.getText().toString(), editTextPassword.getText().toString());
             }
         });
-
-        // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
-        // Initialize FirebaseAuth
-        mFirebaseAuth = FirebaseAuth.getInstance();
     }
 
-    //Initiate sign in with google
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.sign_in_button:
-                break;
-        }
-    }
-    /**
-     * Add the required signIn method
-     * that actually presents the user with the Google Sign-In UI.
-     *
-     */
-    private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, SIGN_IN_REQUEST_CODE);
-    }
-    //to handle the sign in result and use the account to authenticate with firebase if sign in was successful
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == SIGN_IN_REQUEST_CODE) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                // Google Sign-In was successful, authenticate with Firebase
-                GoogleSignInAccount account = result.getSignInAccount();
-                firebaseAuthWithGoogle(account);
-            } else {
-                // Google Sign-In failed
-                Log.e(TAG, "Google Sign-In failed.");
-            }
-        }
-    }
-
-    //firebaseAuthWithGoogle method to authenticate with the signed in Google account
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        Log.d(TAG, "firebaseAuthWithGooogle:" + acct.getId());
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mFirebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "signInWithCredential", task.getException());
-                            Toast.makeText(ActivitySignIn.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            startActivity(new Intent(ActivitySignIn.this, MainActivity.class));
-                            finish();
-                        }
-                    }
-                });
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
-    }
-
-    //==========================================================
     /*
  *  create account using user email and password after validating them
  *  @param email is the email address used to create user account
@@ -192,14 +125,16 @@ public class ActivitySignIn extends AppCompatActivity implements
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         // account creation successful, update UI with the signed-in user's information
-                        // Log.d("CIS3334", "createUserWithEmail:onComplete:" + task.isSuccessful());
+                        //Log.d("CIS3334", "createUserWithEmail:onComplete:" + task.isSuccessful());
 
-                        textViewStatus.setText("Account creation successful");
+                        if(task.isSuccessful()){
+                            textViewStatus.setText("Account creation successful");
+                        }
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
+                        else if (!task.isSuccessful()) {
                             //    Toast.makeText(MainActivity.this, "Authentication failed",
                             //        Toast.LENGTH_SHORT).show(); //display message
 
@@ -210,27 +145,29 @@ public class ActivitySignIn extends AppCompatActivity implements
                     }
                 });
     }
-        /*
-     * sign in existing user with email and password after validating them
-     * @param email is the email address used for sign in
-     * @param password is the password used to sign user in
-     */
-    private void signIn1(String email, String password){
+    /*
+ * sign in existing user with email and password after validating them
+ * @param email is the email address used for sign in
+ * @param password is the password used to sign user in
+ */
+    private void signIn(String email, String password){
         mFirebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         // Sign in success, update UI with the signed-in user's information
+                        if(task.isSuccessful()){
+                            // Log.d("CIS3334", "signInWithEmail:onComplete:" + task.isSuccessful());
+                            textViewStatus.setText("Sign in successful!");
 
-                        //======Removing log call:
-                        // Log.d("CIS3334", "signInWithEmail:onComplete:" + task.isSuccessful());
-                        textViewStatus.setText("Sign in successful!");
+                            mainAct.displayChatMessages();
 
+                        }
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
+                        else if (!task.isSuccessful()) {
 
                             //========Removing Log and Toast calls
                             // Log.w("CIS3334", "signInWithEmail:failed", task.getException());
@@ -240,7 +177,6 @@ public class ActivitySignIn extends AppCompatActivity implements
                             textViewStatus.setText("Authentication failed. Please try again");
                         }
 
-                        // ...
                     }
                 });
     }
