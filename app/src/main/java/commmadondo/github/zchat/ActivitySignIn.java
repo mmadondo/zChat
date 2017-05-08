@@ -160,7 +160,7 @@ public class ActivitySignIn extends AppCompatActivity {
                             // Log.d("CIS3334", "signInWithEmail:onComplete:" + task.isSuccessful());
                             textViewStatus.setText("Sign in successful!");
 
-                            mainAct.displayChatMessages();
+                            //mainAct.displayChatMessages();
 
                         }
 
