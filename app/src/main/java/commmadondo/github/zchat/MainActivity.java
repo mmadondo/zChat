@@ -27,7 +27,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
-
 import static android.app.Activity.RESULT_OK;
 
 /**
@@ -42,11 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
 
-    FirebaseAuth AuthUI = FirebaseAuth.getInstance();
-    private GoogleApiClient mGoogleApiClient;
-    private static final String TAG = "MainActivity";
-    private String mUsername;
 
+    private static final String TAG = "MainActivity";
     private static final int SIGN_IN_REQUEST_CODE = 9001;
 
     @Override
@@ -54,59 +50,43 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //set default user as anonymous
-        mUsername = ANONYMOUS;
-
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-       // mFirebaseUser.getUid();
-        //mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
+        //Alternative: mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser()
 
-        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         if (mFirebaseUser == null) {
             // Start sign in/sign up activity
-           // startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(), SIGN_IN_REQUEST_CODE );
-
-            startActivityForResult(new Intent(this, ActivitySignIn.class), SIGN_IN_REQUEST_CODE);
-            finish();
-            return;
-
+            startActivityForResult(new Intent(MainActivity.this, ActivitySignIn.class), SIGN_IN_REQUEST_CODE);
         } else {
             // User is already signed in. Therefore, display a welcome Toast
             try {
 
-                Toast.makeText(this, "Welcome to zChat!" + mFirebaseUser.getUid(), Toast.LENGTH_LONG).show();
-//replace getUid with mFirebaseUser.getDisplayName()
-                // Load chat room contents
-                displayChatMessages();
+                Toast.makeText(this, "Welcome to zChat! " + mFirebaseUser.getEmail(), Toast.LENGTH_LONG).show();
+
+                displayChatMessages(); // Load chat room contents
 
             } catch (NullPointerException e) {
+
                 System.out.print("NullPointerException caught");
             }
         }
 
 
-        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        // fab.setEnabled(true);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditText input = (EditText) findViewById(R.id.input);
                 try{
                     // Read the input field and push a new instance of ChatMessage to the Firebase database
-                    FirebaseDatabase.getInstance()
-                            .getReference()
-                            .push()
-                            .setValue(new ChatMessage(input.getText().toString(),
-                                    FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
-                            );
+                    FirebaseDatabase.getInstance().getReference().push().setValue(
+                            new ChatMessage(input.getText().toString(), FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                    );
 
-                    // Clear the input
-                    input.setText("");
+                    input.setText("");  // Clear the input
 
                 } catch(NullPointerException e){
                     System.out.print("NullPointerException caught");
@@ -123,12 +103,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == SIGN_IN_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
 
-                Toast.makeText(this, "Successfully signed in. Welcome!", Toast.LENGTH_LONG).show();
-                displayChatMessages();
+                Toast.makeText(this, "Successfully signed in. Welcome!", Toast.LENGTH_LONG).show(); //display message
+                displayChatMessages();  // Load chat room contents
 
             } else {
 
-                Toast.makeText(this, "Sign in failed. Please try again later.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Sign in failed. Please try again later.", Toast.LENGTH_LONG).show(); //display message
                 // Close the app
                 finish();
             }
@@ -137,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu); //instantiate menu XML file into a Menu object.
         return true;
     }
 
@@ -145,11 +125,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_sign_out:
-                mFirebaseAuth.signOut();
-                Toast.makeText(MainActivity.this, "You have been signed out.", Toast.LENGTH_LONG).show();
+                mFirebaseAuth.signOut(); //log user out
+                String signOutStr = "Hey " +  mFirebaseUser.getEmail() + "! You have been signed out.";
+                Toast.makeText(MainActivity.this, signOutStr, Toast.LENGTH_LONG).show(); //display message
 
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(this, ActivitySignIn.class));
+                startActivity(new Intent(MainActivity.this, ActivitySignIn.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -158,17 +138,20 @@ public class MainActivity extends AppCompatActivity {
 
 
    public void displayChatMessages() {
-        ListView listOfMessages = (ListView) findViewById(R.id.list_of_messages);
+        ListView listOfMessages = (ListView) findViewById(R.id.list_of_messages); //display list of messages posted
 
         adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class, R.layout.message, FirebaseDatabase.getInstance().getReference()) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
+
                 // Get references to the views of message.xml
                 TextView messageText = (TextView) v.findViewById(R.id.message_text);
                 TextView messageUser = (TextView) v.findViewById(R.id.message_user);
                 TextView messageTime = (TextView) v.findViewById(R.id.message_time);
 
                 // Set their text
+                model.setMessageUser(mFirebaseUser.getEmail()); //display email instead
+
                 messageText.setText(model.getMessageText());
                 messageUser.setText(model.getMessageUser());
 

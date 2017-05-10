@@ -51,7 +51,7 @@ public class ActivitySignIn extends AppCompatActivity {
 
     EditText editTextEmail, editTextPassword;
     Button buttonLogin, buttonCreateLogin;
-    TextView textViewStatus;
+    //TextView textViewStatus;
     private FirebaseAuth mFirebaseAuth; // Firebase instance variables
 
     // private SignInButton mSignInButton;
@@ -64,7 +64,7 @@ public class ActivitySignIn extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in2);
 
         //setting up the views
-        textViewStatus = (TextView) findViewById(R.id.textViewStatus);
+        //textViewStatus = (TextView) findViewById(R.id.textViewStatus);
         editTextEmail = (EditText) findViewById(R.id.editTextEmail);
         editTextPassword = (EditText) findViewById(R.id.editTextPassword);
 
@@ -80,21 +80,28 @@ public class ActivitySignIn extends AppCompatActivity {
         buttonLogin = (Button) findViewById(R.id.buttonLogin);
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Log.d("CIS3334", "normal login ");
+
                 if(editTextEmail.getText().toString().equals("")){ //email is required
                     editTextEmail.setError("Can't be blank!");
-                } else if(editTextPassword.getText().toString().equals("")){ //password is required
+                }
+
+                else if(editTextPassword.getText().toString().equals("")){ //password is required
                     editTextPassword.setError("Can't be blank");
-                }else{
+                }
+
+                else{
                     if(!(editTextEmail.length()<5) || !(editTextPassword.length()>5)){
 
                         signIn(editTextEmail.getText().toString(), editTextPassword.getText().toString());
                         mainAct.onActivityResult(SIGN_IN_REQUEST_CODE, RESULT_OK, null); //want to display messages after login
 
                     }else{
+
                         if(editTextEmail.length()<5){
                             editTextEmail.setError("At Least 5 characters required");
-                        }else{
+                        }
+
+                        else{
                             editTextPassword.setError("At Least 5 characters required");
                         }
                     }
@@ -107,10 +114,12 @@ public class ActivitySignIn extends AppCompatActivity {
         //setup a button so user creates account using email and password
         buttonCreateLogin = (Button) findViewById(R.id.buttonCreateLogin);
         buttonCreateLogin.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View v) {
-                // Log.d("CIS3334", "Create Account ");
+                Log.d("CIS3334", "Create Account ");
                 createAccount(editTextEmail.getText().toString(), editTextPassword.getText().toString());
             }
+
         });
     }
 
@@ -125,23 +134,24 @@ public class ActivitySignIn extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         // account creation successful, update UI with the signed-in user's information
-                        //Log.d("CIS3334", "createUserWithEmail:onComplete:" + task.isSuccessful());
+                        Log.d("CIS3334", "createUserWithEmail:onComplete:" + task.isSuccessful());
 
                         if(task.isSuccessful()){
-                            textViewStatus.setText("Account creation successful");
+                            //textViewStatus.setText("Account creation successful");
+                            Toast.makeText(ActivitySignIn.this, "Account creation successful",
+                                    Toast.LENGTH_SHORT).show(); //display message
                         }
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         else if (!task.isSuccessful()) {
-                            //    Toast.makeText(MainActivity.this, "Authentication failed",
-                            //        Toast.LENGTH_SHORT).show(); //display message
+                             Toast.makeText(ActivitySignIn.this, "Authentication failed",
+                                   Toast.LENGTH_SHORT).show(); //display message
 
-                            textViewStatus.setText("Authentication failed. Please try again");
+                            //textViewStatus.setText("Authentication failed. Please try again");
                         }
 
-                        // ...
                     }
                 });
     }
@@ -155,26 +165,19 @@ public class ActivitySignIn extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+
                         // Sign in success, update UI with the signed-in user's information
                         if(task.isSuccessful()){
-                            // Log.d("CIS3334", "signInWithEmail:onComplete:" + task.isSuccessful());
-                            textViewStatus.setText("Sign in successful!");
-
-                            //mainAct.displayChatMessages();
-
+                            Log.d("CIS3334", "signInWithEmail:onComplete:" + task.isSuccessful());
+                            Toast.makeText(ActivitySignIn.this, "Sign in successful!", Toast.LENGTH_SHORT );
                         }
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         else if (!task.isSuccessful()) {
-
-                            //========Removing Log and Toast calls
-                            // Log.w("CIS3334", "signInWithEmail:failed", task.getException());
-                            //  Toast.makeText(MainActivity.this, "Authentication failed",
-                            //         Toast.LENGTH_SHORT).show();  //display message
-
-                            textViewStatus.setText("Authentication failed. Please try again");
+                            Log.w("CIS3334", "signInWithEmail:failed", task.getException());
+                             Toast.makeText(ActivitySignIn.this, "Authentication failed. Please try again", Toast.LENGTH_SHORT).show();  //display message
                         }
 
                     }

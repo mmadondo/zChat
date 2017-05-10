@@ -69,13 +69,13 @@
             android:id="@+id/buttonCreateLogin" />
 
     </LinearLayout>
-    <TextView
+    <!--TextView
         android:text="@string/status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textViewStatus"
         android:layout_weight="1"
-        android:textSize="30sp" />
+        android:textSize="30sp" /-->
 
     <!--com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
