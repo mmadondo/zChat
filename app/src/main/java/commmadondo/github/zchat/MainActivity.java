@@ -40,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseListAdapter<ChatMessage> adapter;
 
     public static final String ANONYMOUS = "anonymous";
-
-
     private static final String TAG = "MainActivity";
     private static final int SIGN_IN_REQUEST_CODE = 9001;
 
@@ -73,9 +71,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
+        //user to send text
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
