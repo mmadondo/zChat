@@ -75,9 +75,7 @@ public class ChatMessage {
  /*   public String getMessageID() {
         return messageID;
     }
-
     public void setMessageID(String messageID) {
         this.messageID = messageID;
-
     }*/
 }
