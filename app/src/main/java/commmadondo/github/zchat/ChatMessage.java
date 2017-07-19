@@ -3,7 +3,9 @@ package commmadondo.github.zchat;
 import java.util.Date;
 
 /**
- * Created by mmadondo on 4/23/2017. The messages in the chat room.
+ * Created by mmadondo on 4/23/2017. The messages show in a public  group chat.
+ 
+ Will try to implement this in iOS via swift
  */
 
 public class ChatMessage {
