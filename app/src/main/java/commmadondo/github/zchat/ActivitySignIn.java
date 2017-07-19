@@ -45,7 +45,7 @@ import static android.app.Activity.RESULT_OK;
 public class ActivitySignIn extends AppCompatActivity {
        // implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
-    MainActivity mainAct;
+    MainActivity mainAct;  //instance object of main activity
     private static final String TAG = "ActivitySignIn";
     private static final int SIGN_IN_REQUEST_CODE = 9001;
 
